@@ -89,3 +89,32 @@ def add_pr_to_db(pr_name, pr_des, pr_count, pr_price, pr_photo):
                 'VALUES (?, ?, ?, ?, ?);', (pr_name, pr_des, pr_count, pr_price, pr_photo))
     # Фиксируем изменения
     connection.commit()
+
+# Удаление товара из БД
+def del_from_db(pr_name):
+    sql.execute('DELETE FROM products WHERE pr_name=?;', (pr_name,))
+    # Фиксируем изменения
+    connection.commit()
+
+# Проверка на наличие товаров в БД
+def check_pr():
+    if sql.execute('SELECT * FROM products;').fetchone():
+        return True
+    else:
+        return False
+
+# Изменения атрибута товара
+def change_pr(pr_name, new_value, attr='', plus_or_minus=''):
+    if attr == 'pr_count':
+        # Берем кол-во со СКЛАДА
+        stock = sql.execute('SELECT pr_count FROM products WHERE pr_name=?;', (pr_name,)).fetchone()[0]
+        if plus_or_minus == '+':
+            new_count = stock + new_value
+            sql.execute('UPDATE products SET pr_count=? WHERE pr_name=?;', (new_count, pr_name))
+        elif plus_or_minus == '-':
+            new_count = stock - new_value
+            sql.execute('UPDATE products SET pr_count=? WHERE pr_name=?;', (new_count, pr_name))
+    else:
+        sql.execute(f'UPDATE products SET {attr}={new_value} WHERE pr_name={pr_name};')
+    # Фиксируем изменения
+    connection.commit()
